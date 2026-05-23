@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import PasswordStrength, { evaluatePassword } from '../components/ui/PasswordStrength';
 import { images } from '../utils/images';
 
 const Register = () => {
@@ -15,17 +16,24 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const strength = evaluatePassword(password);
+  const passwordsMatch = confirmPassword.length === 0 || password === confirmPassword;
+  const canSubmit = name.trim() && email.trim() && strength.valid && password === confirmPassword;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
+    if (!strength.valid) {
+      setError('Your password does not meet the minimum requirements.');
+      return;
+    }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
+      setError('Passwords do not match.');
       return;
     }
 
+    setLoading(true);
     try {
       await register({ name, email, password });
       navigate('/onboarding');
@@ -85,7 +93,8 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
+                  aria-describedby="password-strength"
                 />
               </div>
               <div>
@@ -98,16 +107,23 @@ const Register = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
+                  aria-invalid={!passwordsMatch}
                 />
+                {!passwordsMatch && (
+                  <p className="mt-1 text-xs text-rose-400">Passwords don't match.</p>
+                )}
               </div>
+            </div>
+            <div id="password-strength">
+              <PasswordStrength password={password} />
             </div>
             {error && (
               <div className="rounded-md border border-rose-500/30 bg-rose-500/10 text-rose-300 text-sm px-3 py-2">
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+            <Button type="submit" className="w-full" size="lg" disabled={loading || !canSubmit}>
               {loading ? 'Creating account...' : 'Create my account →'}
             </Button>
           </form>
