@@ -1,12 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Vite defaults to :5173 since v5; override with FRONTEND_URL if your project pins a different port.
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-// Test backend runs on a dedicated port (see fitness-tracking-backend/.env.test.example)
-// so it can't collide with a developer's dev server on :5000.
+// Run the test frontend AND backend on dedicated ports so they never collide
+// with a developer's dev servers (Vite :5173, backend :5000). This also
+// guarantees we don't accidentally "reuse" a dev Vite whose VITE_API_URL is
+// pointing at the dev backend.
+const FRONTEND_PORT = process.env.FRONTEND_PORT || '5174';
+const FRONTEND_URL = process.env.FRONTEND_URL || `http://localhost:${FRONTEND_PORT}`;
 const BACKEND_PORT = process.env.BACKEND_PORT || '5001';
 const API_URL = process.env.API_URL || `http://localhost:${BACKEND_PORT}/api`;
 const CI = !!process.env.CI;
+
+// Propagate API_URL into workers' process.env so tests/helpers/*.js (which
+// default to :5000) talk to the test backend.
+process.env.API_URL = API_URL;
 
 export default defineConfig({
   testDir: './tests',
@@ -53,9 +59,12 @@ export default defineConfig({
           stderr: 'pipe',
         },
         {
-          command: `VITE_API_URL=${API_URL} npm run dev --prefix ../fitness-tracking-frontend`,
+          // Force the test frontend onto its own port with --strictPort so
+          // a missed override fails loudly instead of silently falling forward.
+          // reuseExistingServer is OFF so we never inherit a dev Vite's env.
+          command: `VITE_API_URL=${API_URL} npm run dev --prefix ../fitness-tracking-frontend -- --port ${FRONTEND_PORT} --strictPort`,
           url: FRONTEND_URL,
-          reuseExistingServer: !CI,
+          reuseExistingServer: false,
           timeout: 60_000,
           stdout: 'ignore',
           stderr: 'pipe',

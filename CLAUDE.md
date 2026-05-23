@@ -18,6 +18,8 @@ The two apps are developed and run independently. Run `npm install` in each dire
 - `npm run dev:test` / `npm run start:test` — same, but NODE_ENV=test (port 5001, test DB)
 - `npm start` — production start (`node src/server.js`)
 - `npm run seed` / `npm run seed:test` — populate the dev or test database
+- `npm run clean:test-data` — dry-run (add `-- --apply`) removes Playwright-generated docs from the *dev* DB by email/name pattern (`pw-*@pwtest.example.com`, `name LIKE 'Playwright%'`). Use to scrub test leakage.
+- `npm run clean:test-db` — same script against the *test* DB (NODE_ENV=test) for resetting fixtures between runs.
 - `npm run lint` / `npm run format` — ESLint / Prettier on `src/**/*.js`
 - No unit-test runner is configured (`npm test` exits 1). E2E tests live in `app-test/`.
 
