@@ -29,6 +29,8 @@ Required env vars (any one of `.env`, `.env.development`, `.env.test`): `NODE_EN
 
 **Database naming**: dev = `fitness_tracking_dev`, test = `fitness_tracking_test`. ALWAYS include the database name in `MONGODB_URI`'s path. A bare trailing `/` makes Mongoose default to a database literally named `test`, which collides confusingly with the NODE_ENV=test setup.
 
+**Email delivery** (optional, used by `/auth/forgot-password`): configured by `MAIL_HOST`/`MAIL_PORT`/`MAIL_USER`/`MAIL_PASS`/`MAIL_SECURE`/`MAIL_FROM` env vars. If `MAIL_HOST` is absent, the app falls back to logging messages to stdout AND returning `_devToken` in the API response — so dev and Playwright work without any SMTP setup. Verify a real provider with `npm run mail:test -- recipient@example.com`. See `.env.example` for provider-specific setup hints (Mailtrap / Gmail App Password / SendGrid / Resend).
+
 ### Frontend (`fitness-tracking-frontend/`)
 - `npm run dev` — Vite dev server (port 3000)
 - `npm run build` — production build to `dist/`

@@ -13,6 +13,7 @@
     "clean:test-data": "NODE_ENV=development node src/scripts/cleanup-test-data.js",
     "clean:test-db": "NODE_ENV=test node src/scripts/cleanup-test-data.js",
     "admin:promote": "NODE_ENV=development node src/scripts/promote-admin.js",
+    "mail:test": "NODE_ENV=development node src/scripts/test-mail.js",
     "lint": "eslint src/**/*.js",
     "format": "prettier --write src/**/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -31,7 +32,8 @@
     "joi": "^18.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "nodemailer": "^8.0.8"
   },
   "devDependencies": {
     "eslint": "^10.4.0",
