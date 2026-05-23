@@ -2,15 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
+
+// Ensure env is loaded even if app.js is required outside of server.js (e.g. tests).
+require('./config/environment');
 
 const requestId = require('./middleware/requestId.middleware');
 const logging = require('./middleware/logging.middleware');
 const errorHandler = require('./middleware/error.middleware');
 const dbReady = require('./middleware/dbReady.middleware');
-
-dotenv.config();
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');

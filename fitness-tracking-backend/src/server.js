@@ -1,7 +1,9 @@
+// Load env (.env.{NODE_ENV} then .env) before anything else reads process.env.
+const config = require('./config/environment');
 const app = require('./app');
 const connectDB = require('./config/database');
 
-const PORT = process.env.PORT || 5000;
+const PORT = config.port;
 
 const startServer = async () => {
   // Start the HTTP listener first so the API is always reachable.

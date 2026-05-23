@@ -5,8 +5,11 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "seed": "node src/seed.js",
+    "dev": "NODE_ENV=development nodemon src/server.js",
+    "start:test": "NODE_ENV=test node src/server.js",
+    "dev:test": "NODE_ENV=test nodemon src/server.js",
+    "seed": "NODE_ENV=development node src/seed.js",
+    "seed:test": "NODE_ENV=test node src/seed.js",
     "lint": "eslint src/**/*.js",
     "format": "prettier --write src/**/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
