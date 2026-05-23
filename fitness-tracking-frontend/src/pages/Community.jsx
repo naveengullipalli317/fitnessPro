@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -102,7 +103,18 @@ const Community = () => {
         <div className="flex justify-between items-start gap-3">
           <div className="flex-1 min-w-0">
             <span className="eyebrow">{c.memberCount} {c.memberCount === 1 ? 'member' : 'members'}</span>
-            <h4 className="headline text-2xl mt-1 break-words">{c.name}</h4>
+            <h4 className="headline text-2xl mt-1 break-words">
+              {/* Members can drill into the detail page (which hosts chat).
+                  Non-members on Explore see the same card but no link — they
+                  Join first via the button below. */}
+              {tab === 'mine' ? (
+                <Link to={`/dashboard/community/${c._id}`} className="hover:text-volt-500">
+                  {c.name}
+                </Link>
+              ) : (
+                c.name
+              )}
+            </h4>
             {c.description && (
               <p className="text-sm text-ink-300 mt-2 line-clamp-3">{c.description}</p>
             )}
@@ -115,25 +127,33 @@ const Community = () => {
           </span>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 justify-end">
+        <div className="mt-4 flex flex-wrap items-center gap-3 justify-end">
           {tab === 'mine' ? (
-            isOwner ? (
-              <button
-                type="button"
-                onClick={() => handleDelete(c)}
-                className="text-xs text-ink-500 hover:text-rose-400"
+            <>
+              <Link
+                to={`/dashboard/community/${c._id}`}
+                className="text-xs uppercase tracking-widest2 text-volt-500 hover:text-volt-400"
               >
-                ✕ Delete
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleLeave(c)}
-                className="text-xs text-ink-500 hover:text-rose-400"
-              >
-                Leave
-              </button>
-            )
+                Open chat →
+              </Link>
+              {isOwner ? (
+                <button
+                  type="button"
+                  onClick={() => handleDelete(c)}
+                  className="text-xs text-ink-500 hover:text-rose-400"
+                >
+                  ✕ Delete
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleLeave(c)}
+                  className="text-xs text-ink-500 hover:text-rose-400"
+                >
+                  Leave
+                </button>
+              )}
+            </>
           ) : (
             <Button size="sm" onClick={() => handleJoin(c)}>
               {c.type === 'public' ? 'Join' : 'Request to join'}

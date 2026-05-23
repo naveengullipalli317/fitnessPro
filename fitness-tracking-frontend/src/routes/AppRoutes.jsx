@@ -20,6 +20,7 @@ const ExerciseLibrary = lazy(() => import('../pages/ExerciseLibrary'));
 const Goals = lazy(() => import('../pages/Goals'));
 const Routines = lazy(() => import('../pages/Routines'));
 const Community = lazy(() => import('../pages/Community'));
+const CommunityDetail = lazy(() => import('../pages/CommunityDetail'));
 const Profile = lazy(() => import('../pages/Profile'));
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
 const AdminCommunityDetail = lazy(() => import('../pages/AdminCommunityDetail'));
@@ -62,6 +63,7 @@ const AppRoutes = () => {
             <Route path="goals" element={<Goals />} />
             <Route path="routines" element={<Routines />} />
             <Route path="community" element={<Community />} />
+            <Route path="community/:id" element={<CommunityDetail />} />
             <Route path="profile" element={<Profile />} />
           </Route>
           <Route
