@@ -1,11 +1,23 @@
 // Validation utility functions
 const Joi = require('joi');
 
-// Auth validation schemas
+// Auth validation schemas.
+// Password policy mirrors the PasswordStrength helper on the frontend:
+// at least 8 chars, contains at least one letter and one number.
+// Login does not enforce these (legacy accounts may have weaker passwords).
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(50).trim().required(),
   email: Joi.string().email().trim().lowercase().required(),
-  password: Joi.string().min(6).max(128).required(),
+  password: Joi.string()
+    .min(8)
+    .max(128)
+    .pattern(/[A-Za-z]/, 'letter')
+    .pattern(/\d/, 'number')
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 8 characters long.',
+      'string.pattern.name': 'Password must include at least one {#name}.',
+    }),
   age: Joi.number().integer().min(13).max(120),
   gender: Joi.string().valid('male', 'female', 'other', 'prefer_not_to_say'),
   height: Joi.number().min(50).max(300),

@@ -21,7 +21,21 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      // Branch on HTTP status, but keep the "wrong email vs wrong password"
+      // distinction intentionally ambiguous to avoid account enumeration.
+      const status = err.response?.status;
+      const serverMessage = err.response?.data?.message;
+      if (status === 401 || status === 400) {
+        setError('Email or password is incorrect. Please try again.');
+      } else if (status === 429) {
+        setError('Too many sign-in attempts. Please wait a few minutes and try again.');
+      } else if (status >= 500) {
+        setError("We can't reach the server right now. Please try again shortly.");
+      } else if (!err.response) {
+        setError('Network error. Check your connection and try again.');
+      } else {
+        setError(serverMessage || 'Sign-in failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -74,8 +88,9 @@ const Login = () => {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); if (error) setError(''); }}
                 required
+                aria-invalid={!!error}
               />
             </div>
             <div>
@@ -87,8 +102,9 @@ const Login = () => {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
                 required
+                aria-invalid={!!error}
               />
             </div>
             {error && (

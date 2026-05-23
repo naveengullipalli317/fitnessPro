@@ -14,13 +14,18 @@ The two apps are developed and run independently. Run `npm install` in each dire
 ## Common Commands
 
 ### Backend (`fitness-tracking-backend/`)
-- `npm run dev` — start with nodemon (port 5000 by default)
+- `npm run dev` — dev server with nodemon (NODE_ENV=development, port 5000 by default)
+- `npm run dev:test` / `npm run start:test` — same, but NODE_ENV=test (port 5001, test DB)
 - `npm start` — production start (`node src/server.js`)
-- `npm run seed` — run `src/seed.js` to populate the database
+- `npm run seed` / `npm run seed:test` — populate the dev or test database
+- `npm run clean:test-data` — dry-run (add `-- --apply`) removes Playwright-generated docs from the *dev* DB by email/name pattern (`pw-*@pwtest.example.com`, `name LIKE 'Playwright%'`). Use to scrub test leakage.
+- `npm run clean:test-db` — same script against the *test* DB (NODE_ENV=test) for resetting fixtures between runs.
 - `npm run lint` / `npm run format` — ESLint / Prettier on `src/**/*.js`
-- No test runner is configured (`npm test` exits 1).
+- No unit-test runner is configured (`npm test` exits 1). E2E tests live in `app-test/`.
 
-Required env vars (in `fitness-tracking-backend/.env`): `NODE_ENV`, `PORT`, `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `BCRYPT_SALT_ROUNDS`.
+**Environment loading**: `src/config/environment.js` loads `.env.{NODE_ENV}` first, then `.env` as defaults (dotenv doesn't override already-set vars, so the env-specific file wins). Templates are committed as `.env.example`, `.env.development.example`, `.env.test.example`; the real `.env.*` files are gitignored.
+
+Required env vars (any one of `.env`, `.env.development`, `.env.test`): `NODE_ENV`, `PORT`, `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `BCRYPT_SALT_ROUNDS`. **Never point `.env.test`'s `MONGODB_URI` at the dev or prod database** — test runs may wipe data.
 
 ### Frontend (`fitness-tracking-frontend/`)
 - `npm run dev` — Vite dev server (port 3000)
