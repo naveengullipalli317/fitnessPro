@@ -37,6 +37,7 @@ const register = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         token
       }
     });
@@ -64,6 +65,15 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
+    // Block deactivated users from minting new tokens. Separate path from the
+    // 401 above so the frontend can show a different message.
+    if (user.isDeactivated) {
+      return res.status(403).json({
+        success: false,
+        message: 'This account has been deactivated. Contact support.'
+      });
+    }
+
     // Generate token
     const token = generateToken(user._id);
 
@@ -74,6 +84,7 @@ const login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         token
       }
     });

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Loading from '../components/ui/Loading';
 import PrivateRoute from './PrivateRoute';
+import AdminRoute from './AdminRoute';
 
 const Home = lazy(() => import('../pages/Home'));
 const Login = lazy(() => import('../pages/Login'));
@@ -20,6 +21,7 @@ const Goals = lazy(() => import('../pages/Goals'));
 const Routines = lazy(() => import('../pages/Routines'));
 const Community = lazy(() => import('../pages/Community'));
 const Profile = lazy(() => import('../pages/Profile'));
+const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
 
 const AppRoutes = () => {
   const { loading } = useAuth();
@@ -61,6 +63,14 @@ const AppRoutes = () => {
             <Route path="community" element={<Community />} />
             <Route path="profile" element={<Profile />} />
           </Route>
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

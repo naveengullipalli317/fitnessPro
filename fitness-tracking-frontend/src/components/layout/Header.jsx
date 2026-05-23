@@ -72,6 +72,18 @@ const Header = () => {
           <div className="flex items-center gap-3 shrink-0">
             {user ? (
               <>
+                {user.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    title="Open admin console"
+                    className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-rose-500/40 bg-rose-500/10 px-2.5 py-1 text-xs font-bold uppercase tracking-widest2 text-rose-300 hover:bg-rose-500/20"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" />
+                    </svg>
+                    Admin
+                  </Link>
+                )}
                 <NotificationBell />
                 <span className="hidden sm:inline text-sm text-ink-400">
                   Hi, <span className="text-ink-100 font-medium">{user.name}</span>

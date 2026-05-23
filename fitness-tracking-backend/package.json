@@ -12,6 +12,7 @@
     "seed:test": "NODE_ENV=test node src/seed.js",
     "clean:test-data": "NODE_ENV=development node src/scripts/cleanup-test-data.js",
     "clean:test-db": "NODE_ENV=test node src/scripts/cleanup-test-data.js",
+    "admin:promote": "NODE_ENV=development node src/scripts/promote-admin.js",
     "lint": "eslint src/**/*.js",
     "format": "prettier --write src/**/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
