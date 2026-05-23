@@ -23,16 +23,30 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling errors
+// Response interceptor for handling errors.
+//
+// Auto-kick on 401 is ONLY for protected requests. The auth endpoints
+// themselves use 401 as a normal business signal (wrong password,
+// expired token on reset, etc.) — auto-redirecting would hide those
+// errors AND hard-reload the page, eating the form state.
+//
+// We also skip the redirect when we're ALREADY on a public auth page
+// (defence in depth: if a developer adds a new auth call later, it
+// still won't pull the rug out from under the form).
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const requestUrl = error.config?.url || '';
+      const isAuthEndpoint = requestUrl.startsWith('/auth/');
+      const onPublicAuthPage = /\/(login|register|forgot-password|reset-password)(\b|$)/.test(
+        window.location.pathname
+      );
+      if (!isAuthEndpoint && !onPublicAuthPage) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
