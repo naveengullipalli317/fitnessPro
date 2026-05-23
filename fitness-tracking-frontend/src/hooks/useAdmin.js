@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import api from '../utils/api';
 
+// All analytics endpoints fetched in one parallel burst on dashboard load.
+// Each returns the chart-ready shape so no transform is needed on the FE.
+const ANALYTICS_ENDPOINTS = [
+  ['signups',     '/admin/analytics/signups'],
+  ['activeUsers', '/admin/analytics/active-users'],
+  ['topActive',   '/admin/analytics/top-active'],
+  ['communities', '/admin/analytics/communities'],
+  ['workouts',    '/admin/analytics/workouts'],
+  ['roles',       '/admin/analytics/roles'],
+];
+
 /**
  * Thin client for the /admin/* endpoints. Separate hook (not folded into
  * useAuth) so non-admin code paths never load this bundle / make these calls.
@@ -9,8 +20,10 @@ export const useAdmin = () => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState({ items: [], total: 0, page: 1, pageSize: 25 });
   const [communities, setCommunities] = useState({ items: [], total: 0, page: 1, pageSize: 25 });
+  const [analytics, setAnalytics] = useState(null); // { signups, activeUsers, topActive, communities, workouts, roles }
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -68,26 +81,45 @@ export const useAdmin = () => {
     await api.delete(`/admin/communities/${communityId}/members/${userId}`);
   };
 
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      const results = await Promise.all(
+        ANALYTICS_ENDPOINTS.map(([_, url]) => api.get(url).then((r) => r.data?.data))
+      );
+      const next = {};
+      ANALYTICS_ENDPOINTS.forEach(([key], i) => { next[key] = results[i]; });
+      setAnalytics(next);
+    } catch (err) {
+      // Analytics is non-fatal — the page still shows tables. Surface a
+      // banner if we can't load it but don't crash the dashboard.
+      setError(err.response?.data?.message || 'Failed to load analytics');
+    }
+  }, []);
+
   useEffect(() => {
     (async () => {
       setIsLoading(true);
       setError(null);
       try {
-        await Promise.all([fetchStats(), fetchUsers(), fetchCommunities()]);
+        await Promise.all([fetchStats(), fetchUsers(), fetchCommunities(), fetchAnalytics()]);
+        setLastFetchedAt(new Date());
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [fetchStats, fetchUsers, fetchCommunities]);
+  }, [fetchStats, fetchUsers, fetchCommunities, fetchAnalytics]);
 
   return {
     stats,
     users,
     communities,
+    analytics,
+    lastFetchedAt,
     isLoading,
     error,
     fetchUsers,
     fetchCommunities,
+    fetchAnalytics,
     updateUser,
     deleteUser,
     fetchCommunityDetail,

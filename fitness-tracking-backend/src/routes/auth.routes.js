@@ -10,6 +10,7 @@ const {
   resetPassword,
 } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
+const { protectAndTrack } = require('../middleware/activity.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const {
   registerSchema,
@@ -28,7 +29,7 @@ router.post('/logout', logout);
 router.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
 
-router.get('/profile', protect, getProfile);
-router.put('/profile', protect, validate(userUpdateSchema), updateProfile);
+router.get('/profile', protectAndTrack, getProfile);
+router.put('/profile', protectAndTrack, validate(userUpdateSchema), updateProfile);
 
 module.exports = router;

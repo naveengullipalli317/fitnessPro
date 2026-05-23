@@ -82,6 +82,50 @@ const kickMember = async (req, res) => {
   }
 };
 
+// Analytics endpoints. Each one delegates to the service which returns a
+// shape the recharts components can render directly with no transform.
+
+const analyticsSignups = async (req, res) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 30;
+    res.json({ success: true, data: await service.getSignupsTimeSeries(days) });
+  } catch (err) { sendError(res, err); }
+};
+
+const analyticsActiveUsers = async (req, res) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 30;
+    res.json({ success: true, data: await service.getActiveUsersTimeSeries(days) });
+  } catch (err) { sendError(res, err); }
+};
+
+const analyticsTopActive = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit, 10) || 10;
+    res.json({ success: true, data: await service.getTopActiveUsers(limit) });
+  } catch (err) { sendError(res, err); }
+};
+
+const analyticsCommunities = async (req, res) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 30;
+    res.json({ success: true, data: await service.getCommunityAnalytics(days) });
+  } catch (err) { sendError(res, err); }
+};
+
+const analyticsWorkouts = async (req, res) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 30;
+    res.json({ success: true, data: await service.getWorkoutsTimeSeries(days) });
+  } catch (err) { sendError(res, err); }
+};
+
+const analyticsRoles = async (_req, res) => {
+  try {
+    res.json({ success: true, data: await service.getRoleBreakdown() });
+  } catch (err) { sendError(res, err); }
+};
+
 module.exports = {
   stats,
   listUsers,
@@ -91,4 +135,10 @@ module.exports = {
   listCommunities,
   getCommunity,
   kickMember,
+  analyticsSignups,
+  analyticsActiveUsers,
+  analyticsTopActive,
+  analyticsCommunities,
+  analyticsWorkouts,
+  analyticsRoles,
 };

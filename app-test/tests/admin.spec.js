@@ -30,15 +30,27 @@ test.describe('Admin', () => {
     await expect(page).toHaveURL(/\/dashboard($|\/)/);
   });
 
-  test('admin sees the Operations Console and a users table', async ({ page }) => {
+  test('admin sees the Operations Console, KPI tiles, charts and a users table', async ({ page }) => {
     const me = await registerAndSignIn(page, 'admin-yes');
     await promoteToAdmin(me.email);
 
     await page.goto('/admin');
     await expect(page.getByText('Operations Console')).toBeVisible();
     await expect(page.getByRole('heading', { name: /Admin Dashboard/i })).toBeVisible();
-    // KPI tile
-    await expect(page.getByText('Total users')).toBeVisible();
+
+    // KPI tiles — at least these labels should render. `exact:true` because
+    // the donut chart's subtitle is "N total users" which would collide.
+    await expect(page.getByText('Total users', { exact: true })).toBeVisible();
+    await expect(page.getByText('Active (30d)', { exact: true })).toBeVisible();
+    await expect(page.getByText('Workouts logged', { exact: true })).toBeVisible();
+
+    // Analytics section + chart card headings (recharts internals are SVG
+    // and not deterministic to assert; the labelled card chrome is.)
+    await expect(page.getByRole('heading', { name: /Analytics/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Signups \(30 days\)/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Daily Active Users/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Most active users/i })).toBeVisible();
+
     // The admin's own row should appear in the users table.
     await expect(page.getByText(me.email)).toBeVisible();
     // Admin badge in the row

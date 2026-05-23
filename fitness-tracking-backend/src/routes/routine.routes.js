@@ -8,13 +8,14 @@ const {
   deleteRoutine,
 } = require('../controllers/routine.controller');
 const { protect } = require('../middleware/auth.middleware');
+const { protectAndTrack } = require('../middleware/activity.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { routineCreateSchema, routineUpdateSchema } = require('../utils/validation.utils');
 
-router.get('/', protect, getRoutines);
-router.get('/:id', protect, getRoutineById);
-router.post('/', protect, validate(routineCreateSchema), createRoutine);
-router.put('/:id', protect, validate(routineUpdateSchema), updateRoutine);
-router.delete('/:id', protect, deleteRoutine);
+router.get('/', protectAndTrack, getRoutines);
+router.get('/:id', protectAndTrack, getRoutineById);
+router.post('/', protectAndTrack, validate(routineCreateSchema), createRoutine);
+router.put('/:id', protectAndTrack, validate(routineUpdateSchema), updateRoutine);
+router.delete('/:id', protectAndTrack, deleteRoutine);
 
 module.exports = router;

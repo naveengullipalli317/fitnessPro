@@ -23,4 +23,13 @@ router.get('/communities', ctrl.listCommunities);
 router.get('/communities/:id', ctrl.getCommunity);
 router.delete('/communities/:id/members/:userId', ctrl.kickMember);
 
+// Analytics — each chart on the dashboard hits one of these. Cheap reads;
+// no rate-limit beyond the existing apiLimiter on /admin/*.
+router.get('/analytics/signups', ctrl.analyticsSignups);
+router.get('/analytics/active-users', ctrl.analyticsActiveUsers);
+router.get('/analytics/top-active', ctrl.analyticsTopActive);
+router.get('/analytics/communities', ctrl.analyticsCommunities);
+router.get('/analytics/workouts', ctrl.analyticsWorkouts);
+router.get('/analytics/roles', ctrl.analyticsRoles);
+
 module.exports = router;

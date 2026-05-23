@@ -7,6 +7,7 @@ const Goal = require('../models/Goal');
 const Routine = require('../models/Routine');
 const Community = require('../models/Community');
 const CommunityMember = require('../models/CommunityMember');
+const UserSession = require('../models/UserSession');
 
 class ServiceError extends Error {
   constructor(message, statusCode = 400) {
@@ -235,6 +236,193 @@ const kickCommunityMember = async (communityId, targetUserId) => {
   return { kicked: true };
 };
 
+// ───────────────────────────────────────────────────────────────────────
+// Analytics. Time-series + aggregations for the admin dashboard charts.
+// All time-series functions return [{ date: 'YYYY-MM-DD', value: N }, ...]
+// — a shape the frontend can hand straight to Recharts.
+// ───────────────────────────────────────────────────────────────────────
+
+const startOfDay = (d) => {
+  const x = new Date(d);
+  x.setUTCHours(0, 0, 0, 0);
+  return x;
+};
+const dayKey = (d) => startOfDay(d).toISOString().slice(0, 10); // 'YYYY-MM-DD'
+const daysAgo = (n) => {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - n);
+  return startOfDay(d);
+};
+
+/**
+ * Build a complete day-bucketed series including zero-days. Mongo's
+ * $group only emits buckets that have rows — joining against a generated
+ * date axis fills the gaps so the chart doesn't skip days with no signups.
+ */
+const fillDailySeries = (rawByDay, days) => {
+  const out = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = daysAgo(i);
+    const k = dayKey(d);
+    out.push({ date: k, value: rawByDay[k] || 0 });
+  }
+  return out;
+};
+
+/**
+ * Daily new signups for the last N days. Buckets by createdAt date.
+ */
+const getSignupsTimeSeries = async (days = 30) => {
+  const since = daysAgo(days - 1);
+  const rows = await User.aggregate([
+    { $match: { createdAt: { $gte: since } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        n: { $sum: 1 },
+      },
+    },
+  ]);
+  const map = Object.fromEntries(rows.map((r) => [r._id, r.n]));
+  return fillDailySeries(map, days);
+};
+
+/**
+ * Daily Active Users for the last N days. "Active on day D" =
+ * distinct user with any session row whose lastBeatAt lands in D.
+ */
+const getActiveUsersTimeSeries = async (days = 30) => {
+  const since = daysAgo(days - 1);
+  const rows = await UserSession.aggregate([
+    { $match: { lastBeatAt: { $gte: since } } },
+    {
+      $group: {
+        _id: {
+          day: { $dateToString: { format: '%Y-%m-%d', date: '$lastBeatAt' } },
+          userId: '$userId',
+        },
+      },
+    },
+    {
+      $group: {
+        _id: '$_id.day',
+        n: { $sum: 1 },
+      },
+    },
+  ]);
+  const map = Object.fromEntries(rows.map((r) => [r._id, r.n]));
+  return fillDailySeries(map, days);
+};
+
+/**
+ * Top N users by total accumulated active time across all of their sessions.
+ * Joined with the User collection so the chart can show names.
+ */
+const getTopActiveUsers = async (limit = 10) => {
+  const rows = await UserSession.aggregate([
+    {
+      $group: {
+        _id: '$userId',
+        totalMs: {
+          $sum: {
+            $subtract: ['$lastBeatAt', '$startedAt'],
+          },
+        },
+        sessions: { $sum: 1 },
+      },
+    },
+    { $sort: { totalMs: -1 } },
+    { $limit: Math.min(50, Math.max(1, limit)) },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    { $unwind: '$user' },
+    {
+      $project: {
+        _id: 0,
+        userId: '$_id',
+        name: '$user.name',
+        email: '$user.email',
+        role: '$user.role',
+        sessions: 1,
+        totalMs: 1,
+        // Frontend rounds to 1 decimal place; sending minutes is more useful
+        // than hours for users who've been on a few minutes.
+        totalMinutes: { $round: [{ $divide: ['$totalMs', 60000] }, 1] },
+      },
+    },
+  ]);
+  return rows;
+};
+
+/**
+ * Community size distribution + growth. Returns:
+ *   { growth: [{date, value}], sizes: [{ name, members, type }] }
+ */
+const getCommunityAnalytics = async (days = 30) => {
+  const since = daysAgo(days - 1);
+  const growthRows = await Community.aggregate([
+    { $match: { createdAt: { $gte: since } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        n: { $sum: 1 },
+      },
+    },
+  ]);
+  const growth = fillDailySeries(
+    Object.fromEntries(growthRows.map((r) => [r._id, r.n])),
+    days
+  );
+
+  // Top 10 largest communities — that's the interesting distribution.
+  const sizes = await Community.find({})
+    .sort({ memberCount: -1 })
+    .limit(10)
+    .select('name memberCount type')
+    .lean();
+
+  return {
+    growth,
+    sizes: sizes.map((c) => ({ name: c.name, members: c.memberCount, type: c.type })),
+  };
+};
+
+/**
+ * Workouts logged per day. Simpler than DAU because there's one row per
+ * workout, no distinct-count required.
+ */
+const getWorkoutsTimeSeries = async (days = 30) => {
+  const since = daysAgo(days - 1);
+  const rows = await Workout.aggregate([
+    { $match: { createdAt: { $gte: since } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        n: { $sum: 1 },
+      },
+    },
+  ]);
+  const map = Object.fromEntries(rows.map((r) => [r._id, r.n]));
+  return fillDailySeries(map, days);
+};
+
+/**
+ * User-role distribution for the donut. Two slices today (user/admin) but
+ * the shape leaves room for more roles later without changing the chart.
+ */
+const getRoleBreakdown = async () => {
+  const rows = await User.aggregate([
+    { $group: { _id: '$role', n: { $sum: 1 } } },
+  ]);
+  return rows.map((r) => ({ role: r._id || 'user', count: r.n }));
+};
+
 module.exports = {
   ServiceError,
   getStats,
@@ -245,4 +433,11 @@ module.exports = {
   listCommunities,
   getCommunityDetail,
   kickCommunityMember,
+  // Analytics:
+  getSignupsTimeSeries,
+  getActiveUsersTimeSeries,
+  getTopActiveUsers,
+  getCommunityAnalytics,
+  getWorkoutsTimeSeries,
+  getRoleBreakdown,
 };
