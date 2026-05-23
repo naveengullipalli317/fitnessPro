@@ -22,6 +22,7 @@ const Routines = lazy(() => import('../pages/Routines'));
 const Community = lazy(() => import('../pages/Community'));
 const Profile = lazy(() => import('../pages/Profile'));
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
+const AdminCommunityDetail = lazy(() => import('../pages/AdminCommunityDetail'));
 
 const AppRoutes = () => {
   const { loading } = useAuth();
@@ -68,6 +69,14 @@ const AppRoutes = () => {
             element={
               <AdminRoute>
                 <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/communities/:id"
+            element={
+              <AdminRoute>
+                <AdminCommunityDetail />
               </AdminRoute>
             }
           />

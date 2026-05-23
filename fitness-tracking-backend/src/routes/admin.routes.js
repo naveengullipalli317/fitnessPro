@@ -20,5 +20,7 @@ router.get('/users/:id', ctrl.getUser);
 router.patch('/users/:id', validate(userUpdateSchema), ctrl.updateUser);
 router.delete('/users/:id', ctrl.deleteUser);
 router.get('/communities', ctrl.listCommunities);
+router.get('/communities/:id', ctrl.getCommunity);
+router.delete('/communities/:id/members/:userId', ctrl.kickMember);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -244,12 +245,20 @@ const AdminDashboard = () => {
                   <th className="text-left px-4 py-3">Owner</th>
                   <th className="text-left px-4 py-3">Members</th>
                   <th className="text-left px-4 py-3">Created</th>
+                  <th className="text-right px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {communities.items.map((c) => (
-                  <tr key={c._id} className="border-b border-ink-800/60 last:border-0">
-                    <td className="px-4 py-3 text-ink-100 font-medium">{c.name}</td>
+                  <tr key={c._id} className="border-b border-ink-800/60 last:border-0 hover:bg-ink-800/40">
+                    <td className="px-4 py-3">
+                      <Link
+                        to={`/admin/communities/${c._id}`}
+                        className="text-ink-100 font-medium hover:text-volt-500 underline-offset-4 hover:underline"
+                      >
+                        {c.name}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3">
                       <span className={'chip ' + (c.type === 'public' ? 'chip-volt' : '')}>{c.type}</span>
                     </td>
@@ -260,11 +269,19 @@ const AdminDashboard = () => {
                     <td className="px-4 py-3 text-ink-500 text-xs">
                       {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        to={`/admin/communities/${c._id}`}
+                        className="text-xs text-ink-400 hover:text-volt-500"
+                      >
+                        View members →
+                      </Link>
+                    </td>
                   </tr>
                 ))}
                 {communities.items.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-ink-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-ink-500">
                       No communities.
                     </td>
                   </tr>

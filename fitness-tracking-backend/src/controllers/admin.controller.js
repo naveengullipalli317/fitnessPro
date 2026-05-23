@@ -63,4 +63,32 @@ const listCommunities = async (req, res) => {
   }
 };
 
-module.exports = { stats, listUsers, getUser, updateUser, deleteUser, listCommunities };
+// @route GET /api/admin/communities/:id  (community + members)
+const getCommunity = async (req, res) => {
+  try {
+    res.json({ success: true, data: await service.getCommunityDetail(req.params.id) });
+  } catch (err) {
+    sendError(res, err);
+  }
+};
+
+// @route DELETE /api/admin/communities/:id/members/:userId
+const kickMember = async (req, res) => {
+  try {
+    await service.kickCommunityMember(req.params.id, req.params.userId);
+    res.json({ success: true, message: 'Member removed.' });
+  } catch (err) {
+    sendError(res, err);
+  }
+};
+
+module.exports = {
+  stats,
+  listUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+  listCommunities,
+  getCommunity,
+  kickMember,
+};

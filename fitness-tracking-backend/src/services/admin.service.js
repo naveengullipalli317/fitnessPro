@@ -190,6 +190,51 @@ const listCommunities = async ({ search, page = 1, pageSize = 25 } = {}) => {
   return { communities, total, page: p, pageSize: ps };
 };
 
+/**
+ * Single community + its members (active and pending). Admin override —
+ * skips the public/private visibility rule that gates regular users.
+ */
+const getCommunityDetail = async (communityId) => {
+  const Community = require('../models/Community');
+  const community = await Community.findById(communityId).populate('createdBy', 'name email').lean();
+  if (!community) throw new ServiceError('Community not found.', 404);
+
+  const members = await CommunityMember.find({ communityId })
+    .populate('userId', 'name email role isDeactivated')
+    .sort({ joinedAt: 1 })
+    .lean();
+
+  return { community, members };
+};
+
+/**
+ * Remove a member from a community. Owner cannot be kicked — to remove the
+ * owner an admin must delete the community (or transfer ownership, phase 2).
+ * Mirrors community.service.leaveCommunity's invariant: no orphan communities.
+ */
+const kickCommunityMember = async (communityId, targetUserId) => {
+  const Community = require('../models/Community');
+  const community = await Community.findById(communityId);
+  if (!community) throw new ServiceError('Community not found.', 404);
+
+  const membership = await CommunityMember.findOne({ communityId, userId: targetUserId });
+  if (!membership) throw new ServiceError('That user is not a member of this community.', 404);
+
+  if (membership.role === 'owner') {
+    throw new ServiceError(
+      'Cannot remove the owner. Delete the community or transfer ownership first.',
+      400
+    );
+  }
+
+  const wasActive = membership.status === 'active';
+  await CommunityMember.deleteOne({ _id: membership._id });
+  if (wasActive) {
+    await Community.updateOne({ _id: communityId }, { $inc: { memberCount: -1 } });
+  }
+  return { kicked: true };
+};
+
 module.exports = {
   ServiceError,
   getStats,
@@ -198,4 +243,6 @@ module.exports = {
   updateUser,
   deleteUser,
   listCommunities,
+  getCommunityDetail,
+  kickCommunityMember,
 };

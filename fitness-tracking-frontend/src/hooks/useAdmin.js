@@ -56,6 +56,18 @@ export const useAdmin = () => {
     await Promise.all([fetchUsers(), fetchStats(), fetchCommunities()]);
   };
 
+  // Community detail (single community + member list) — used by the
+  // /admin/communities/:id page. Returned directly, not stored in state,
+  // because only one detail view is open at a time.
+  const fetchCommunityDetail = async (id) => {
+    const res = await api.get(`/admin/communities/${id}`);
+    return res.data?.data;
+  };
+
+  const kickCommunityMember = async (communityId, userId) => {
+    await api.delete(`/admin/communities/${communityId}/members/${userId}`);
+  };
+
   useEffect(() => {
     (async () => {
       setIsLoading(true);
@@ -78,6 +90,8 @@ export const useAdmin = () => {
     fetchCommunities,
     updateUser,
     deleteUser,
+    fetchCommunityDetail,
+    kickCommunityMember,
   };
 };
 
