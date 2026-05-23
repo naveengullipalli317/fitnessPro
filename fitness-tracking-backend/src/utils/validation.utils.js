@@ -141,6 +141,22 @@ const routineUpdateSchema = Joi.object({
   )
 });
 
+// Community schemas. bannerUrl is a plain URL string in phase 1 — phase 2
+// will swap in real upload handling without breaking this contract.
+const communityCreateSchema = Joi.object({
+  name: Joi.string().min(2).max(60).trim().required(),
+  description: Joi.string().max(1000).allow('').default(''),
+  type: Joi.string().valid('public', 'private').default('public'),
+  bannerUrl: Joi.string().uri().max(500).allow('').default(''),
+});
+
+const communityUpdateSchema = Joi.object({
+  name: Joi.string().min(2).max(60).trim(),
+  description: Joi.string().max(1000).allow(''),
+  type: Joi.string().valid('public', 'private'),
+  bannerUrl: Joi.string().uri().max(500).allow(''),
+});
+
 // Validation middleware wrapper
 const validate = (schema) => (req, res, next) => {
   const { error } = schema.validate(req.body, { abortEarly: false });
@@ -169,6 +185,8 @@ module.exports = {
   goalUpdateSchema,
   routineCreateSchema,
   routineUpdateSchema,
+  communityCreateSchema,
+  communityUpdateSchema,
   // Validation middleware
   validate
 };

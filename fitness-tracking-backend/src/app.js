@@ -18,6 +18,7 @@ const workoutRoutes = require('./routes/workout.routes');
 const exerciseRoutes = require('./routes/exercise.routes');
 const goalRoutes = require('./routes/goal.routes');
 const routineRoutes = require('./routes/routine.routes');
+const communityRoutes = require('./routes/community.routes');
 
 const app = express();
 
@@ -72,6 +73,7 @@ const mountApi = (base) => {
   app.use(`${base}/exercises`, apiLimiter, dbReady, exerciseRoutes);
   app.use(`${base}/goals`, apiLimiter, dbReady, goalRoutes);
   app.use(`${base}/routines`, apiLimiter, dbReady, routineRoutes);
+  app.use(`${base}/communities`, apiLimiter, dbReady, communityRoutes);
 };
 
 mountApi('/api/v1');

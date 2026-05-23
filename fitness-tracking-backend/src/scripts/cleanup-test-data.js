@@ -16,6 +16,8 @@ const Workout = require('../models/Workout');
 const WorkoutDetail = require('../models/WorkoutDetail');
 const Goal = require('../models/Goal');
 const Routine = require('../models/Routine');
+const Community = require('../models/Community');
+const CommunityMember = require('../models/CommunityMember');
 
 const APPLY = process.argv.includes('--apply');
 
@@ -58,13 +60,23 @@ const USER_FILTER = {
   const detailCount = await WorkoutDetail.countDocuments({ workoutId: { $in: workoutIds } });
   const goalCount = await Goal.countDocuments({ userId: { $in: userIds } });
   const routineCount = await Routine.countDocuments({ createdBy: { $in: userIds } });
+  const communities = await Community.find({ createdBy: { $in: userIds } }, { _id: 1 }).lean();
+  const communityIds = communities.map((c) => c._id);
+  // Memberships to clean: either rows belonging to test users, OR rows in
+  // communities created by test users (catches members from real accounts
+  // that joined a Playwright community, if any).
+  const memberCount = await CommunityMember.countDocuments({
+    $or: [{ userId: { $in: userIds } }, { communityId: { $in: communityIds } }],
+  });
 
   console.log('[cleanup] would remove:');
-  console.log(`           users:          ${users.length}`);
-  console.log(`           workouts:       ${workouts.length}`);
-  console.log(`           workoutDetails: ${detailCount}`);
-  console.log(`           goals:          ${goalCount}`);
-  console.log(`           routines:       ${routineCount}`);
+  console.log(`           users:             ${users.length}`);
+  console.log(`           workouts:          ${workouts.length}`);
+  console.log(`           workoutDetails:    ${detailCount}`);
+  console.log(`           goals:             ${goalCount}`);
+  console.log(`           routines:          ${routineCount}`);
+  console.log(`           communities:       ${communities.length}`);
+  console.log(`           communityMembers:  ${memberCount}`);
 
   if (!APPLY) {
     console.log('[cleanup] dry run — re-run with --apply to delete.');
@@ -77,15 +89,21 @@ const USER_FILTER = {
     workouts: await Workout.deleteMany({ _id: { $in: workoutIds } }),
     goals: await Goal.deleteMany({ userId: { $in: userIds } }),
     routines: await Routine.deleteMany({ createdBy: { $in: userIds } }),
+    members: await CommunityMember.deleteMany({
+      $or: [{ userId: { $in: userIds } }, { communityId: { $in: communityIds } }],
+    }),
+    communities: await Community.deleteMany({ _id: { $in: communityIds } }),
     users: await User.deleteMany({ _id: { $in: userIds } }),
   };
 
   console.log('[cleanup] deleted:');
-  console.log(`           workoutDetails: ${del.details.deletedCount}`);
-  console.log(`           workouts:       ${del.workouts.deletedCount}`);
-  console.log(`           goals:          ${del.goals.deletedCount}`);
-  console.log(`           routines:       ${del.routines.deletedCount}`);
-  console.log(`           users:          ${del.users.deletedCount}`);
+  console.log(`           workoutDetails:    ${del.details.deletedCount}`);
+  console.log(`           workouts:          ${del.workouts.deletedCount}`);
+  console.log(`           goals:             ${del.goals.deletedCount}`);
+  console.log(`           routines:          ${del.routines.deletedCount}`);
+  console.log(`           communityMembers:  ${del.members.deletedCount}`);
+  console.log(`           communities:       ${del.communities.deletedCount}`);
+  console.log(`           users:             ${del.users.deletedCount}`);
 
   await mongoose.disconnect();
   console.log('[cleanup] done.');

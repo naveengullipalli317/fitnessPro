@@ -10,6 +10,7 @@ const navLinks = [
   { to: '/dashboard/exercises', label: 'Exercises' },
   { to: '/dashboard/goals', label: 'Goals' },
   { to: '/dashboard/routines', label: 'Routines' },
+  { to: '/dashboard/community', label: 'Community' },
   { to: '/dashboard/profile', label: 'Profile' },
 ];
 

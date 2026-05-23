@@ -18,6 +18,7 @@ const Calendar = lazy(() => import('../pages/Calendar'));
 const ExerciseLibrary = lazy(() => import('../pages/ExerciseLibrary'));
 const Goals = lazy(() => import('../pages/Goals'));
 const Routines = lazy(() => import('../pages/Routines'));
+const Community = lazy(() => import('../pages/Community'));
 const Profile = lazy(() => import('../pages/Profile'));
 
 const AppRoutes = () => {
@@ -57,6 +58,7 @@ const AppRoutes = () => {
             <Route path="exercises" element={<ExerciseLibrary />} />
             <Route path="goals" element={<Goals />} />
             <Route path="routines" element={<Routines />} />
+            <Route path="community" element={<Community />} />
             <Route path="profile" element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
