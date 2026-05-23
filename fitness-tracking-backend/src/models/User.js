@@ -66,6 +66,13 @@ const userSchema = new mongoose.Schema({
   isDeactivated: {
     type: Boolean,
     default: false
+  },
+  // Marks the last time the user's password changed (registration counts
+  // as the first change). Used to invalidate JWTs issued before a reset —
+  // the protect middleware rejects tokens whose iat predates this stamp.
+  passwordChangedAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true

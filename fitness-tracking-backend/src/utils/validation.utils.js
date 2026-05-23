@@ -30,6 +30,29 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+// Forgot-password: only the email. No "user exists" check at the schema
+// level — handled in the service with a generic response either way.
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().trim().lowercase().required(),
+});
+
+// Reset-password: token + new password. Password rules MUST mirror the
+// registerSchema policy or users would get a weaker-password sneak path
+// via the reset flow.
+const resetPasswordSchema = Joi.object({
+  token: Joi.string().length(64).hex().required(),
+  password: Joi.string()
+    .min(8)
+    .max(128)
+    .pattern(/[A-Za-z]/, 'letter')
+    .pattern(/\d/, 'number')
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 8 characters long.',
+      'string.pattern.name': 'Password must include at least one {#name}.',
+    }),
+});
+
 // User validation schemas
 const userIdSchema = Joi.string().hex().length(24);
 
@@ -175,6 +198,8 @@ module.exports = {
   // Schemas
   registerSchema,
   loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   userIdSchema,
   userUpdateSchema,
   workoutCreateSchema,

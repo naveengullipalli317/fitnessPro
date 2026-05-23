@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwt.utils');
 const { hashPassword, comparePassword } = require('../utils/password.utils');
+const passwordService = require('../services/password.service');
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -144,10 +145,54 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// @desc    Request a password reset link
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  try {
+    const { rawToken } = await passwordService.requestPasswordReset(req.body.email);
+
+    // Generic success regardless of whether the email exists — anti-enumeration.
+    const body = {
+      success: true,
+      message: 'If an account exists for that email, a reset link has been sent.',
+    };
+    // Dev convenience: return the raw token so Playwright (and you, while
+    // iterating) can complete the flow without a real mailbox. NEVER do this
+    // in production — it'd defeat the whole point of email-based reset.
+    if (process.env.NODE_ENV !== 'production' && rawToken) {
+      body._devToken = rawToken;
+    }
+    res.json(body);
+  } catch (err) {
+    // Even unexpected errors get the generic shape — a 500 leak would itself
+    // tell an attacker something went wrong only for real emails.
+    res.json({
+      success: true,
+      message: 'If an account exists for that email, a reset link has been sent.',
+    });
+  }
+};
+
+// @desc    Redeem a reset token + set a new password
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+  try {
+    await passwordService.resetPassword(req.body.token, req.body.password);
+    res.json({ success: true, message: 'Password reset. You can sign in with the new password.' });
+  } catch (err) {
+    const status = err instanceof passwordService.ServiceError ? err.statusCode : 500;
+    res.status(status).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   getProfile,
-  updateProfile
+  updateProfile,
+  forgotPassword,
+  resetPassword,
 };
