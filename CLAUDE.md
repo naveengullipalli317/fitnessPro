@@ -27,6 +27,8 @@ The two apps are developed and run independently. Run `npm install` in each dire
 
 Required env vars (any one of `.env`, `.env.development`, `.env.test`): `NODE_ENV`, `PORT`, `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `BCRYPT_SALT_ROUNDS`. **Never point `.env.test`'s `MONGODB_URI` at the dev or prod database** — test runs may wipe data.
 
+**Database naming**: dev = `fitness_tracking_dev`, test = `fitness_tracking_test`. ALWAYS include the database name in `MONGODB_URI`'s path. A bare trailing `/` makes Mongoose default to a database literally named `test`, which collides confusingly with the NODE_ENV=test setup.
+
 ### Frontend (`fitness-tracking-frontend/`)
 - `npm run dev` — Vite dev server (port 3000)
 - `npm run build` — production build to `dist/`
