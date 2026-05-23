@@ -26,9 +26,12 @@ export default defineConfig({
 
   use: {
     baseURL: FRONTEND_URL,
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    // Capture artifacts for every test (pass or fail) so `npm run report`
+    // shows the trace/video/screenshot for any test you click. Heavier on
+    // disk; test-results/ and playwright-report/ are gitignored.
+    trace: 'on',
+    screenshot: 'on',
+    video: 'on',
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
     extraHTTPHeaders: { Accept: 'application/json' },
