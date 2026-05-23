@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply bg-ink-950 text-ink-100 min-h-screen;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+  body {
+    background-image:
+      radial-gradient(60rem 40rem at 80% -10%, rgba(249, 115, 22, 0.12), transparent 60%),
+      radial-gradient(50rem 35rem at -10% 30%, rgba(168, 85, 247, 0.10), transparent 60%);
+    background-attachment: fixed;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-ink-100;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply inline-block text-xs font-semibold tracking-widest2 uppercase text-volt-500;
+  }
+  .headline {
+    @apply font-display tracking-wide uppercase text-ink-100;
+  }
+  .ink-card {
+    @apply bg-ink-800/80 border border-ink-700 rounded-xl backdrop-blur;
+  }
+  .ink-input {
+    @apply w-full h-11 rounded-md bg-ink-900 border border-ink-700 px-3 py-2 text-sm text-ink-100
+      placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-volt-500 focus:border-transparent;
+  }
+  .chip {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium tracking-wide
+      bg-ink-700 text-ink-300 border border-ink-700;
+  }
+  .chip-volt {
+    @apply bg-volt-500/15 text-volt-400 border border-volt-500/30;
+  }
+  .chip-lime {
+    @apply bg-lime-500/15 text-lime-400 border border-lime-500/30;
+  }
+  .btn-volt {
+    @apply inline-flex items-center justify-center rounded-md bg-volt-500 text-ink-950 font-semibold
+      px-5 py-2.5 hover:bg-volt-400 transition-colors shadow-glow;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-md border border-ink-700 text-ink-100
+      px-5 py-2.5 hover:bg-ink-800 transition-colors;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #f97316 0%, #f43f5e 50%, #a855f7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Custom scrollbar for the dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f97316;
+}
