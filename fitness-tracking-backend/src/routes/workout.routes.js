@@ -12,18 +12,19 @@ const {
   deleteSet,
 } = require('../controllers/workout.controller');
 const { protect } = require('../middleware/auth.middleware');
+const { protectAndTrack } = require('../middleware/activity.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { workoutCreateSchema, workoutUpdateSchema } = require('../utils/validation.utils');
 
-router.get('/', protect, getUserWorkouts);
-router.get('/:id', protect, getWorkoutById);
-router.post('/', protect, validate(workoutCreateSchema), createWorkout);
-router.put('/:id', protect, validate(workoutUpdateSchema), updateWorkout);
-router.delete('/:id', protect, deleteWorkout);
+router.get('/', protectAndTrack, getUserWorkouts);
+router.get('/:id', protectAndTrack, getWorkoutById);
+router.post('/', protectAndTrack, validate(workoutCreateSchema), createWorkout);
+router.put('/:id', protectAndTrack, validate(workoutUpdateSchema), updateWorkout);
+router.delete('/:id', protectAndTrack, deleteWorkout);
 
-router.get('/:id/sets', protect, getWorkoutSets);
-router.post('/:id/sets', protect, addSetToWorkout);
-router.put('/:id/sets/:setId', protect, updateSet);
-router.delete('/:id/sets/:setId', protect, deleteSet);
+router.get('/:id/sets', protectAndTrack, getWorkoutSets);
+router.post('/:id/sets', protectAndTrack, addSetToWorkout);
+router.put('/:id/sets/:setId', protectAndTrack, updateSet);
+router.delete('/:id/sets/:setId', protectAndTrack, deleteSet);
 
 module.exports = router;

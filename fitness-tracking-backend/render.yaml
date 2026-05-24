@@ -1,0 +1,141 @@
+# Render Blueprint — declares all three backend services (dev / qa / prod)
+# as one IaC artifact. Apply via Render dashboard:
+#   New + → Blueprint → connect this repo → Render reads this file.
+#
+# Each service is pinned to a branch and auto-deploys on every push to
+# that branch. The GitHub Actions deploy workflow ALSO triggers a deploy
+# via a deploy-hook URL — both paths converge on the same outcome; the
+# workflow trigger gives us deterministic ordering with the frontend
+# deploy + smoke-check.
+#
+# Secrets policy: every sensitive env var is declared with `sync: false`
+# so Render keeps the key but accepts the value via the dashboard. NEVER
+# commit real secret values to this file.
+
+services:
+  # ─────────────────────────────────────────────────────────────────────
+  # DEVELOPMENT
+  # ─────────────────────────────────────────────────────────────────────
+  - type: web
+    name: fitness-tracking-backend-dev
+    runtime: node
+    plan: free
+    region: oregon
+    branch: development
+    rootDir: fitness-tracking-backend
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    # /api/health returns 503 when Mongo is disconnected — Render uses
+    # that to detect unhealthy instances and trigger automatic restarts.
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: development
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_SALT_ROUNDS
+        value: '12'
+      - key: FRONTEND_URL
+        sync: false  # set to the matching Vercel preview URL for dev
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: '587'
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: MAIL_SECURE
+        value: 'false'
+      - key: MAIL_FROM
+        sync: false
+
+  # ─────────────────────────────────────────────────────────────────────
+  # QA
+  # ─────────────────────────────────────────────────────────────────────
+  - type: web
+    name: fitness-tracking-backend-qa
+    runtime: node
+    plan: free
+    region: oregon
+    branch: qa
+    rootDir: fitness-tracking-backend
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      # QA mirrors prod's NODE_ENV so the runtime config-loader picks
+      # the same code paths (e.g. /api/auth/forgot-password's _devToken
+      # is hidden in prod and qa, exposed only in dev/test).
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_SALT_ROUNDS
+        value: '12'
+      - key: FRONTEND_URL
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: '587'
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: MAIL_SECURE
+        value: 'false'
+      - key: MAIL_FROM
+        sync: false
+
+  # ─────────────────────────────────────────────────────────────────────
+  # PRODUCTION
+  # ─────────────────────────────────────────────────────────────────────
+  - type: web
+    name: fitness-tracking-backend-prod
+    runtime: node
+    # Starter plan ($7/mo) avoids free-tier cold starts. Bump to
+    # standard once traffic justifies it. Stays as plan key for IaC.
+    plan: starter
+    region: oregon
+    branch: master
+    rootDir: fitness-tracking-backend
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_SALT_ROUNDS
+        value: '12'
+      - key: FRONTEND_URL
+        sync: false  # the prod Vercel domain, e.g. https://nevergiveup.app
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: '587'
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: MAIL_SECURE
+        value: 'false'
+      - key: MAIL_FROM
+        sync: false

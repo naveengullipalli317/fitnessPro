@@ -50,7 +50,30 @@ const userSchema = new mongoose.Schema({
   routines: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Routine'
-  }]
+  }],
+  // Authorization. Default 'user' — admins are minted via the
+  // promote-admin CLI on the server, never via self-signup.
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+    required: true,
+    index: true
+  },
+  // Soft delete. Deactivated users can't log in and are hidden from
+  // social surfaces, but their data stays so workouts/communities they
+  // own retain referential integrity.
+  isDeactivated: {
+    type: Boolean,
+    default: false
+  },
+  // Marks the last time the user's password changed (registration counts
+  // as the first change). Used to invalidate JWTs issued before a reset —
+  // the protect middleware rejects tokens whose iat predates this stamp.
+  passwordChangedAt: {
+    type: Date,
+    default: Date.now
+  }
 }, {
   timestamps: true
 });
