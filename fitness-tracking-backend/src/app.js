@@ -20,6 +20,7 @@ const goalRoutes = require('./routes/goal.routes');
 const routineRoutes = require('./routes/routine.routes');
 const communityRoutes = require('./routes/community.routes');
 const adminRoutes = require('./routes/admin.routes');
+const streakRoutes = require('./routes/streak.routes');
 
 const app = express();
 
@@ -76,6 +77,7 @@ const mountApi = (base) => {
   app.use(`${base}/routines`, apiLimiter, dbReady, routineRoutes);
   app.use(`${base}/communities`, apiLimiter, dbReady, communityRoutes);
   app.use(`${base}/admin`, apiLimiter, dbReady, adminRoutes);
+  app.use(`${base}/streaks`, apiLimiter, dbReady, streakRoutes);
 };
 
 mountApi('/api/v1');

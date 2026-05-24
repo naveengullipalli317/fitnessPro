@@ -9,6 +9,8 @@ import WorkoutStats from '../components/features/WorkoutStats';
 import ProgressCharts from '../components/features/ProgressCharts';
 import RecentWorkouts from '../components/features/RecentWorkouts';
 import UpcomingGoals from '../components/features/UpcomingGoals';
+import StreakBanner from '../components/features/StreakBanner';
+import { useStreak } from '../hooks/useStreak';
 import { images } from '../utils/images';
 
 const DashboardHome = () => {
@@ -16,6 +18,7 @@ const DashboardHome = () => {
   const { workouts, isLoading: workoutsLoading } = useWorkouts();
   const { goals, isLoading: goalsLoading } = useGoals();
   const { missed, count: missedCount, dismissAll } = useMissedWorkouts();
+  const { data: streak, shouldNotify: streakNotify, dismiss: dismissStreak } = useStreak();
 
   if (workoutsLoading || goalsLoading) {
     return <div className="text-center py-12 text-ink-400">Loading your training data…</div>;
@@ -37,6 +40,15 @@ const DashboardHome = () => {
           </p>
         </div>
       </div>
+
+      {/* Streak: rendered as an actionable banner when at-risk/broken,
+          as a small celebratory pill when active, hidden when never-started. */}
+      {streak && streak.status !== 'never-started' && (
+        <StreakBanner
+          streak={streak}
+          onDismiss={streakNotify ? dismissStreak : undefined}
+        />
+      )}
 
       {/* Missed-workouts banner */}
       {missedCount > 0 && (

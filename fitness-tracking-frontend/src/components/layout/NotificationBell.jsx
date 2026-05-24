@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMissedWorkouts } from '../../hooks/useMissedWorkouts';
+import { useStreak } from '../../hooks/useStreak';
 import { workoutImage } from '../../utils/images';
 
 const formatRelative = (d) => {
@@ -15,9 +16,14 @@ const formatRelative = (d) => {
 };
 
 const NotificationBell = () => {
-  const { missed, count, dismiss, dismissAll } = useMissedWorkouts();
+  const { missed, count: missedCount, dismiss, dismissAll } = useMissedWorkouts();
+  const { data: streak, shouldNotify: streakNotify, dismiss: dismissStreak } = useStreak();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
+
+  // Combined count drives the bell badge — both streak alerts AND missed
+  // sessions count as actionable items the user should see.
+  const totalCount = missedCount + (streakNotify ? 1 : 0);
 
   // Close on outside click / escape.
   useEffect(() => {
@@ -41,7 +47,7 @@ const NotificationBell = () => {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={count > 0 ? `${count} missed workouts` : 'Notifications'}
+        aria-label={totalCount > 0 ? `${totalCount} notifications` : 'Notifications'}
         className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-ink-700 bg-ink-900 text-ink-200 hover:border-volt-500 hover:text-volt-500 transition-colors"
       >
         {/* Bell glyph */}
@@ -59,9 +65,9 @@ const NotificationBell = () => {
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
           <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
         </svg>
-        {count > 0 && (
+        {totalCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none ring-2 ring-ink-950">
-            {count > 9 ? '9+' : count}
+            {totalCount > 9 ? '9+' : totalCount}
           </span>
         )}
       </button>
@@ -72,10 +78,12 @@ const NotificationBell = () => {
             <div>
               <span className="eyebrow">Notifications</span>
               <h4 className="text-ink-100 text-sm font-semibold mt-0.5">
-                {count > 0 ? `${count} missed session${count === 1 ? '' : 's'}` : "You're all caught up"}
+                {totalCount > 0
+                  ? `${totalCount} need${totalCount === 1 ? 's' : ''} your attention`
+                  : "You're all caught up"}
               </h4>
             </div>
-            {count > 0 && (
+            {missedCount > 0 && (
               <button
                 type="button"
                 onClick={dismissAll}
@@ -86,13 +94,52 @@ const NotificationBell = () => {
             )}
           </div>
 
-          {count === 0 ? (
+          {totalCount === 0 ? (
             <div className="px-4 py-10 text-center text-sm text-ink-400">
               <div className="text-3xl mb-2">🎯</div>
-              No missed workouts in the last 7 days. Keep the streak alive.
+              {streak?.status === 'active'
+                ? `Nice — ${streak.currentStreak}-day streak active. Keep it going.`
+                : 'No alerts right now. Keep the streak alive.'}
             </div>
           ) : (
             <ul className="max-h-[60vh] overflow-y-auto divide-y divide-ink-800">
+              {/* Streak entry at the top — broken or at-risk only */}
+              {streakNotify && streak && (
+                <li className="px-4 py-3 hover:bg-ink-800/60 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className={
+                      'h-10 w-10 rounded-md shrink-0 flex items-center justify-center text-xl ' +
+                      (streak.status === 'broken' ? 'bg-rose-500/15' : 'bg-amber-500/15')
+                    }>
+                      {streak.status === 'broken' ? '💔' : '⚠️'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-ink-100 font-medium">
+                        {streak.status === 'broken' ? 'Streak broken' : 'Streak at risk'}
+                      </p>
+                      <p className="text-xs text-ink-300 mt-0.5 leading-snug">
+                        {streak.message}
+                      </p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <Link
+                          to="/dashboard/workouts"
+                          onClick={() => setOpen(false)}
+                          className="text-[11px] font-semibold uppercase tracking-wider text-volt-500 hover:text-volt-400"
+                        >
+                          Log a workout →
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={dismissStreak}
+                          className="text-[11px] font-semibold uppercase tracking-wider text-ink-500 hover:text-ink-200"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              )}
               {missed.map((m) => (
                 <li key={m.id} className="px-4 py-3 hover:bg-ink-800/60 transition-colors">
                   <div className="flex items-start gap-3">
