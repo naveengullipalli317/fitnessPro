@@ -3,6 +3,7 @@ import {
   ComposedChart,
   Area,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -102,7 +103,10 @@ const CommunitiesChart = ({ data = { growth: [], sizes: [] } }) => {
             />
             <Bar dataKey="members" radius={[0, 6, 6, 0]}>
               {sizes.map((c, i) => (
-                <Bar key={i} fill={c.type === 'public' ? palette.volt : palette.rose} />
+                <Cell
+                  key={i}
+                  fill={c.type === 'public' ? palette.volt : palette.rose}
+                />
               ))}
             </Bar>
           </ComposedChart>
