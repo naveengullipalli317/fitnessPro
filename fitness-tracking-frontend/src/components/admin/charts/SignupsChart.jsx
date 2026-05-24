@@ -7,7 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import ChartCard, { palette, tooltipStyle } from './ChartCard';
+import ChartCard, { palette, tooltipStyle, lineCursor } from './ChartCard';
 
 // Area chart — daily new user signups for the last N days. Smooth fill so
 // growth shape reads at a glance. Empty days are explicitly zero (the
@@ -46,7 +46,7 @@ const SignupsChart = ({ data = [] }) => {
             allowDecimals={false}
             width={28}
           />
-          <Tooltip {...tooltipStyle} formatter={(v) => [v, 'signups']} />
+          <Tooltip {...tooltipStyle} cursor={lineCursor} formatter={(v) => [v, 'signups']} />
           <Area
             type="monotone"
             dataKey="value"

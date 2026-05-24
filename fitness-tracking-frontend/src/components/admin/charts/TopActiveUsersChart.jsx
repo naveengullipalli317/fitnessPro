@@ -7,7 +7,7 @@ import {
   Tooltip,
   Cell,
 } from 'recharts';
-import ChartCard, { palette, tooltipStyle } from './ChartCard';
+import ChartCard, { palette, tooltipStyle, barCursor } from './ChartCard';
 
 // Horizontal bar of the most-active users by accumulated session time.
 // Vertical bars would force a tiny label area; horizontal lets long names
@@ -57,6 +57,7 @@ const TopActiveUsersChart = ({ data = [] }) => {
           />
           <Tooltip
             {...tooltipStyle}
+            cursor={barCursor}
             formatter={(v, _k, ctx) => [
               `${v} minutes · ${ctx?.payload?.sessions || 0} sessions`,
               ctx?.payload?.fullName || ctx?.payload?.name,

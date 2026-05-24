@@ -8,7 +8,7 @@ import {
   Tooltip,
   Cell,
 } from 'recharts';
-import ChartCard, { palette, tooltipStyle } from './ChartCard';
+import ChartCard, { palette, tooltipStyle, barCursor } from './ChartCard';
 
 // Daily workouts-logged bar chart. Bars (not area) because each day's value
 // is independent — area would imply continuity that isn't there. Today
@@ -43,7 +43,7 @@ const WorkoutsChart = ({ data = [] }) => {
             allowDecimals={false}
             width={28}
           />
-          <Tooltip {...tooltipStyle} formatter={(v) => [v, 'workouts']} />
+          <Tooltip {...tooltipStyle} cursor={barCursor} formatter={(v) => [v, 'workouts']} />
           <Bar dataKey="value" radius={[4, 4, 0, 0]}>
             {data.map((d) => (
               <Cell key={d.date} fill={d.date === todayKey ? palette.volt : palette.voltSoft} />

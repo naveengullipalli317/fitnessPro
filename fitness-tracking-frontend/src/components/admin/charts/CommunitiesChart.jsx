@@ -9,7 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import ChartCard, { palette, tooltipStyle } from './ChartCard';
+import ChartCard, { palette, tooltipStyle, barCursor } from './ChartCard';
 
 // Composed chart: daily community creations (bars) over the period.
 // A second panel below shows the top communities by member count.
@@ -50,7 +50,7 @@ const CommunitiesChart = ({ data = { growth: [], sizes: [] } }) => {
               allowDecimals={false}
               width={28}
             />
-            <Tooltip {...tooltipStyle} formatter={(v) => [v, 'new']} />
+            <Tooltip {...tooltipStyle} cursor={barCursor} formatter={(v) => [v, 'new']} />
             <Area
               type="monotone"
               dataKey="value"
@@ -95,6 +95,7 @@ const CommunitiesChart = ({ data = { growth: [], sizes: [] } }) => {
             />
             <Tooltip
               {...tooltipStyle}
+              cursor={barCursor}
               formatter={(v, _k, ctx) => [
                 `${v} member${v === 1 ? '' : 's'} (${ctx?.payload?.type})`,
                 ctx?.payload?.name,

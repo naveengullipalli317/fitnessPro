@@ -42,6 +42,10 @@ export const palette = {
 };
 
 // Tooltip styling shared by all charts — matches the dark surfaces.
+// NOTE: `cursor` is intentionally NOT in this shared object — Recharts
+// uses different cursor shapes for line/area (stroke) vs bar (fill), and
+// applying the wrong shape falls back to a white-ish default rectangle.
+// Each chart imports the matching preset below instead.
 export const tooltipStyle = {
   contentStyle: {
     background: '#171717',
@@ -52,7 +56,14 @@ export const tooltipStyle = {
   },
   labelStyle: { color: '#a3a3a3', fontSize: 11, marginBottom: 4 },
   itemStyle: { color: '#fafafa' },
-  cursor: { stroke: 'rgba(249,115,22,0.5)', strokeWidth: 1 },
 };
+
+// Vertical line cursor for line/area charts. Subtle volt-orange.
+export const lineCursor = { stroke: 'rgba(249,115,22,0.5)', strokeWidth: 1 };
+
+// Translucent volt-orange tint for bar-chart hover rectangles. Picked at
+// 8% alpha so it reads as "highlighted" without competing with the bar
+// it sits behind.
+export const barCursor = { fill: 'rgba(249,115,22,0.08)' };
 
 export default ChartCard;

@@ -7,7 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import ChartCard, { palette, tooltipStyle } from './ChartCard';
+import ChartCard, { palette, tooltipStyle, lineCursor } from './ChartCard';
 
 // DAU line chart. We use a line not an area here because DAU is naturally
 // noisy and a fill would visually inflate a few quiet days into a "trough".
@@ -44,7 +44,7 @@ const ActiveUsersChart = ({ data = [] }) => {
             allowDecimals={false}
             width={28}
           />
-          <Tooltip {...tooltipStyle} formatter={(v) => [v, 'active users']} />
+          <Tooltip {...tooltipStyle} cursor={lineCursor} formatter={(v) => [v, 'active users']} />
           <Line
             type="monotone"
             dataKey="value"
