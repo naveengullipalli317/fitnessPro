@@ -32,6 +32,8 @@ export const AuthProvider = ({ children }) => {
     const payload = res.data?.data;
     if (!payload?.token) throw new Error('Login response missing token');
     localStorage.setItem('token', payload.token);
+    // Build the user blob explicitly so the token never lands in
+    // localStorage.user (it lives in localStorage.token only).
     const { token, ...userData } = payload;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);

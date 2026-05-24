@@ -4,7 +4,6 @@ import { useWorkouts } from '../hooks/useWorkouts';
 import { useRoutines } from '../hooks/useRoutines';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import SectionHeader from '../components/ui/SectionHeader';
 import { images, workoutImage } from '../utils/images';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

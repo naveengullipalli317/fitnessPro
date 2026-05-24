@@ -1,6 +1,10 @@
 import { useState } from 'react';
 
-const Modal = ({ children, className = '', onOpenChange, isOpen = false, ...props }) => {
+// Note: `onOpenChange` is accepted for callsite-API compatibility but is
+// currently unused — the component drives its own open state. Rebind to
+// `_onOpenChange` so the prop API stays the same for callers, but the
+// local matches the argsIgnorePattern in eslint.config.js.
+const Modal = ({ children, className = '', onOpenChange: _onOpenChange, isOpen = false, ...props }) => {
   const [open, setOpen] = useState(isOpen);
 
   // Sync isOpen prop with state

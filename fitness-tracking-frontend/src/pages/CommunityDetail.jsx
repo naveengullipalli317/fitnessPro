@@ -59,7 +59,7 @@ const CommunityDetail = () => {
     try {
       await send(draft);
       setDraft('');
-    } catch (err) {
+    } catch (_err) {
       // surfaced via the hook's error state on next refetch
     } finally {
       setSending(false);

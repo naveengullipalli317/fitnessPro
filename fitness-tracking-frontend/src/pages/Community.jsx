@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -56,7 +56,7 @@ const Community = () => {
     try {
       await explore.joinCommunity(community._id);
       mine.refetch();
-    } catch (err) {
+    } catch (_err) {
       // surface via per-tab error
     }
   };

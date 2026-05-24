@@ -57,7 +57,9 @@ export const useMessages = (communityId) => {
         setMessages((prev) =>
           prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]
         );
-      } catch (_) {}
+      } catch (_err) {
+        // Malformed SSE payload — skip this event; the next one will be fine.
+      }
     });
 
     es.addEventListener('message:delete', (e) => {
@@ -66,7 +68,9 @@ export const useMessages = (communityId) => {
         setMessages((prev) =>
           prev.map((m) => (m._id === _id ? { ...m, content: '', deletedAt: new Date().toISOString() } : m))
         );
-      } catch (_) {}
+      } catch (_err) {
+        // Malformed SSE payload — skip this event; the next one will be fine.
+      }
     });
 
     es.onerror = () => {

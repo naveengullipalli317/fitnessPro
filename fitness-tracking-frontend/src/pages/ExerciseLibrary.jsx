@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useExercises } from '../hooks/useExercises';
-import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { exerciseImage, images, FALLBACK_IMAGE } from '../utils/images';
 import { exerciseVideo, watchUrl } from '../utils/videos';

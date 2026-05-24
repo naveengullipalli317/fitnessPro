@@ -152,7 +152,7 @@ const RoutinePlanner = () => {
                       Remove
                     </button>
                   </div>
-                )}
+                ))}
                 <Button
                   variant="outline"
                   size="sm"

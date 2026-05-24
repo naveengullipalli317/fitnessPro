@@ -1,11 +1,17 @@
+import { useMemo } from 'react';
 import { Card } from '../ui/Card';
 
 const UpcomingGoals = ({ goals = [] }) => {
-  const now = Date.now();
-  const upcoming = goals
-    .filter((g) => g && !g.achieved && new Date(g.deadline).getTime() > now)
-    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-    .slice(0, 3);
+  // Wrap impure Date.now() in useMemo so React's purity rule is happy and
+  // we don't recompute the upcoming list every render. Deps on `goals`
+  // means the timestamp is freshly captured whenever the goal set changes.
+  const upcoming = useMemo(() => {
+    const now = Date.now();
+    return goals
+      .filter((g) => g && !g.achieved && new Date(g.deadline).getTime() > now)
+      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+      .slice(0, 3);
+  }, [goals]);
 
   return (
     <Card className="p-6">

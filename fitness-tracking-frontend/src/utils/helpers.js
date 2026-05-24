@@ -116,7 +116,7 @@ export const validatePasswordStrength = (password) => {
   }
 
   // Check for at least one letter
-  if !/[a-zA-Z]/.test(password) {
+  if (!/[a-zA-Z]/.test(password)) {
     return {
       isValid: false,
       message: 'Password must contain at least one letter'

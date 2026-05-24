@@ -194,7 +194,10 @@ const Profile = () => {
               {[
                 ['Name', display.name],
                 ['Email', display.email],
-                ['Member Since', new Date(display.createdAt || Date.now()).toLocaleDateString()],
+                // Show '—' when createdAt is missing rather than calling
+                // Date.now() during render (an impure call that the strict
+                // react-hooks/purity rule flags as a re-render hazard).
+                ['Member Since', display.createdAt ? new Date(display.createdAt).toLocaleDateString() : '—'],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between py-3">
                   <dt className="text-ink-400">{k}</dt>
