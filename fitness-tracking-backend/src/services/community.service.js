@@ -2,6 +2,7 @@
 // All membership-count bookkeeping lives here so callers don't have to remember.
 const Community = require('../models/Community');
 const CommunityMember = require('../models/CommunityMember');
+const notificationService = require('./notification.service');
 
 class ServiceError extends Error {
   constructor(message, statusCode = 400) {
@@ -37,6 +38,20 @@ const createCommunity = async (userId, data) => {
     role: 'owner',
     status: 'active',
   });
+
+  // Fan-out: notify every other active user about a new public community.
+  // Private creations stay invisible — the service refuses to fan them out
+  // anyway, but checking here too is one less query when type is private.
+  // Errors are swallowed: a notification glitch must never fail the
+  // community creation that the user just initiated.
+  if (community.type === 'public') {
+    notificationService
+      .fanOutCommunityCreated(community, userId)
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error(`[community.create] fan-out failed: ${err.message}`);
+      });
+  }
 
   return community;
 };

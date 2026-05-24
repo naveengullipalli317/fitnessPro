@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMissedWorkouts } from '../../hooks/useMissedWorkouts';
 import { useStreak } from '../../hooks/useStreak';
+import { useNotifications } from '../../hooks/useNotifications';
 import { workoutImage } from '../../utils/images';
 
 const formatRelative = (d) => {
@@ -18,12 +19,39 @@ const formatRelative = (d) => {
 const NotificationBell = () => {
   const { missed, count: missedCount, dismiss, dismissAll } = useMissedWorkouts();
   const { data: streak, shouldNotify: streakNotify, dismiss: dismissStreak } = useStreak();
+  const {
+    items: serverNotifications,
+    unreadCount: serverUnread,
+    markRead,
+    markAllRead,
+    dismiss: dismissServer,
+    refetch: refetchServer,
+  } = useNotifications();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
-  // Combined count drives the bell badge — both streak alerts AND missed
-  // sessions count as actionable items the user should see.
-  const totalCount = missedCount + (streakNotify ? 1 : 0);
+  // Combined badge: server unread + streak alert + missed-session count.
+  const totalCount = missedCount + (streakNotify ? 1 : 0) + serverUnread;
+
+  // When the dropdown is opened: refetch server notifications so the user
+  // sees anything new, and mark them read on a slight delay (so they
+  // visually register the badge briefly before it clears).
+  useEffect(() => {
+    if (!open) return;
+    refetchServer();
+    if (serverUnread > 0) {
+      const t = setTimeout(() => markAllRead(), 1500);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Match `community.created` to a recognizable icon; fall back to bell.
+  const iconForType = (type) => {
+    if (type?.startsWith('community.')) return '👥';
+    if (type?.startsWith('routine.')) return '📅';
+    return '🔔';
+  };
 
   // Close on outside click / escape.
   useEffect(() => {
@@ -103,6 +131,55 @@ const NotificationBell = () => {
             </div>
           ) : (
             <ul className="max-h-[60vh] overflow-y-auto divide-y divide-ink-800">
+              {/* Server-pushed updates (e.g. new public community) */}
+              {serverNotifications.map((n) => {
+                const isUnread = !n.readAt;
+                return (
+                  <li
+                    key={n._id}
+                    className={
+                      'px-4 py-3 hover:bg-ink-800/60 transition-colors ' +
+                      (isUnread ? 'bg-volt-500/5' : '')
+                    }
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-md bg-ink-800 shrink-0 flex items-center justify-center text-xl">
+                        {iconForType(n.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-ink-100 font-medium">
+                          {n.title}
+                          {isUnread && (
+                            <span className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-volt-500" />
+                          )}
+                        </p>
+                        <p className="text-xs text-ink-300 mt-0.5 leading-snug break-words">
+                          {n.message}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2">
+                          {n.link && (
+                            <Link
+                              to={n.link}
+                              onClick={() => { markRead(n._id); setOpen(false); }}
+                              className="text-[11px] font-semibold uppercase tracking-wider text-volt-500 hover:text-volt-400"
+                            >
+                              Open →
+                            </Link>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => dismissServer(n._id)}
+                            className="text-[11px] font-semibold uppercase tracking-wider text-ink-500 hover:text-ink-200"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+
               {/* Streak entry at the top — broken or at-risk only */}
               {streakNotify && streak && (
                 <li className="px-4 py-3 hover:bg-ink-800/60 transition-colors">
